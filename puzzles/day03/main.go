@@ -14,15 +14,16 @@ func main() {
 }
 
 // Given index in string, find the entire number
-func getNumber(idx int, line string) int {
-	numString := string(line[idx])
+func getNumber(idx *int, linePtr *string) int {
+	line := *linePtr
+	numString := string(line[*idx])
 
-	if !unicode.IsDigit(rune(line[idx])) {
+	if !unicode.IsDigit(rune(line[*idx])) {
 		return 0
 	}
 
 	// Go backwards and find
-	for i := idx - 1; i >= 0; i-- {
+	for i := *idx - 1; i >= 0; i-- {
 		char := string(line[i])
 		if !unicode.IsDigit(rune(line[i])) {
 			break
@@ -32,7 +33,7 @@ func getNumber(idx int, line string) int {
 	}
 
 	// Go forward and find
-	for j := idx + 1; j < len(line); j++ {
+	for j := *idx + 1; j < len(line); j++ {
 		char := string(line[j])
 		if !unicode.IsDigit(rune(line[j])) {
 			break
@@ -49,19 +50,22 @@ func getNumber(idx int, line string) int {
 	return i
 }
 
-func getSurroundingNumbers(row int, col int, lines []string) []int {
+func getSurroundingNumbers(row *int, col *int, lines *[]string) []int {
 	rowDirs := [3]int{1, 0, -1}
 	colDirs := [3]int{1, 0, -1}
 	nums := make(map[int]bool)
 	finalNums := make([]int, 0)
 
+	allLines := *lines
+
 	for _, rowDir := range rowDirs {
 		for _, colDir := range colDirs {
-			rowOther := rowDir + row
-			colOther := colDir + col
+			rowOther := rowDir + *row
+			colOther := colDir + *col
 
 			// Continue if we have exceeded the boundaries
-			if rowOther < 0 || rowOther > len(lines) || colOther < 0 || colOther > len(lines[0]) {
+			if rowOther < 0 || rowOther > len(allLines) || colOther < 0 ||
+				colOther > len(allLines[0]) {
 				continue
 			}
 
@@ -70,7 +74,7 @@ func getSurroundingNumbers(row int, col int, lines []string) []int {
 				continue
 			}
 
-			num := getNumber(colOther, lines[rowOther])
+			num := getNumber(&colOther, &allLines[rowOther])
 
 			// Check if number was found before as each digit in the number could be within the 9-boxes range, causing duplicates
 			if num != 0 {
@@ -95,7 +99,7 @@ func part1(inputFile string) {
 	for i, line := range lines {
 		for j, rune := range line {
 			if !unicode.IsDigit(rune) && string(rune) != "." {
-				nums := getSurroundingNumbers(i, j, lines)
+				nums := getSurroundingNumbers(&i, &j, &lines)
 				for _, num := range nums {
 					sum += num
 				}
@@ -113,7 +117,7 @@ func part2(inputFile string) {
 	for i, line := range lines {
 		for j, rune := range line {
 			if string(rune) == "*" {
-				nums := getSurroundingNumbers(i, j, lines)
+				nums := getSurroundingNumbers(&i, &j, &lines)
 
 				if len(nums) == 2 {
 					sum += nums[0] * nums[1]
