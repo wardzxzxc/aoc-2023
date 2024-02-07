@@ -20,7 +20,7 @@ type Card struct {
 
 func main() {
 	part1("input.txt")
-	part2("test.txt")
+	part2("input.txt")
 }
 
 func part1(fileName string) {
@@ -64,7 +64,71 @@ func part1(fileName string) {
 func part2(fileName string) {
 	allLines := utils.ReadAllLines(fileName)
 	cards := parseInput(allLines)
-	fmt.Println(cards)
+
+	cardDist := make(map[int]int)
+
+	for _, card := range cards {
+		_, ok := cardDist[card.cardNum]
+
+		if !ok {
+			cardDist[card.cardNum] = 1
+		} else {
+			cardDist[card.cardNum] += 1
+		}
+
+		children := getChildCards(card)
+		for _, child := range children {
+			_, ok := cardDist[child]
+			if !ok {
+				cardDist[child] = 1
+			} else {
+				// We already know how many times the current card number appeared
+				// Can use it as a multiplier
+				// For eg. if we know that card 2 appeared twice, and card 2 give us card 3, 4
+				// Naturally, two card 2s will give us 2 card 3, 4
+				cardDist[child] += cardDist[card.cardNum]
+			}
+		}
+	}
+
+	fmt.Println(cardDist)
+	sum := 0
+	for _, freq := range cardDist {
+		sum += freq
+	}
+	fmt.Println(sum)
+}
+
+// Find matching numbers and get the child cards
+func getChildCards(card Card) []int {
+	sum := 0
+	children := make([]int, 0)
+	for _, num := range card.selectedNums {
+		if slices.Contains(card.winningNums, num) {
+			sum += 1
+		}
+	}
+
+	for i := 0; i < sum; i++ {
+		children = append(children, card.cardNum+i+1)
+	}
+
+	return children
+}
+
+func getPointsPerCard(card Card) int {
+	points := 0
+
+	for _, num := range card.selectedNums {
+		if slices.Contains(card.winningNums, num) {
+			if points == 0 {
+				points += 1
+			} else {
+				points *= 2
+			}
+		}
+	}
+	return points
 }
 
 func parseInput(allLines []string) []Card {
@@ -77,7 +141,7 @@ func parseInput(allLines []string) []Card {
 			" ",
 		)
 		selectedNumsString := strings.Split(
-			strings.Split(strings.SplitN(line, ":", 2)[1], "|")[0],
+			strings.Split(strings.SplitN(line, ":", 2)[1], "|")[1],
 			" ",
 		)
 
