@@ -79,14 +79,16 @@ func part2(fileName string) {
 		children := getChildCards(card)
 		for _, child := range children {
 			_, ok := cardDist[child]
-			if !ok {
-				cardDist[child] = 1
-			} else {
-				// We already know how many times the current card number appeared
-				// Can use it as a multiplier
-				// For eg. if we know that card 2 appeared twice, and card 2 give us card 3, 4
-				// Naturally, two card 2s will give us 2 card 3, 4
-				cardDist[child] += cardDist[card.cardNum]
+			if child < len(cards) {
+				if !ok {
+					cardDist[child] = 1
+				} else {
+					// We already know how many times the current card number appeared
+					// Can use it as a multiplier
+					// For eg. if we know that card 2 appeared twice, and card 2 give us card 3, 4
+					// Naturally, two card 2s will give us 2 card 3, 4
+					cardDist[child] += cardDist[card.cardNum]
+				}
 			}
 		}
 	}
@@ -112,6 +114,7 @@ func getChildCards(card Card) []int {
 	for i := 0; i < sum; i++ {
 		children = append(children, card.cardNum+i+1)
 	}
+	fmt.Println(children)
 
 	return children
 }
