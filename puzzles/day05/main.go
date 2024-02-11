@@ -25,11 +25,38 @@ type Puzzle struct {
 }
 
 func main() {
-	part1("test.txt")
+	part1("input.txt")
 }
 
 func part1(fileName string) {
-	fmt.Println(parseInput(fileName))
+	puzzle := parseInput(fileName)
+	minLocNum := 0
+	for i, seed := range puzzle.seeds {
+		soilDest := getDest(seed, puzzle.seedToSoil)
+		fertDest := getDest(soilDest, puzzle.soilToFert)
+		waterDest := getDest(fertDest, puzzle.fertToWater)
+		lightDest := getDest(waterDest, puzzle.waterToList)
+		tempDest := getDest(lightDest, puzzle.lightToTemp)
+		humidDest := getDest(tempDest, puzzle.tempToHumid)
+		locDest := getDest(humidDest, puzzle.humidToLoc)
+
+		if i == 0 || locDest < minLocNum {
+			minLocNum = locDest
+		}
+	}
+	fmt.Println(minLocNum)
+}
+
+func getDest(source int, mappings []ResourceMap) int {
+	for _, resourceMap := range mappings {
+		highBoundSource := resourceMap.source + resourceMap.rangeLength
+		// if within range
+		if source <= highBoundSource && source >= resourceMap.source {
+			return resourceMap.dest - resourceMap.source + source
+		}
+	}
+	// if not within range, dest will be same as source
+	return source
 }
 
 func parseInput(fileName string) Puzzle {
